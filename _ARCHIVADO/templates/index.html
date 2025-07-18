@@ -1,0 +1,36 @@
+html
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Cámara Gesell - Reconocimiento de Emociones</title>
+    <style>
+        .cameras {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .camera-view {
+            height: 450px;
+            width:  100%;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Reconocimiento de Emociones en Vivo</h2>
+    <div class="cameras">
+        <div class="container_cam">
+            <img class="camera-view" src="{{ url_for('video', cam_name='cam1') }}">
+        </div>
+
+        <!-- <div class="container_cam">
+            <img class="camera-view" src="{{ url_for('video', cam_name='cam2') }}">
+        </div> -->
+    </div>
+
+</body>
+
+</html>

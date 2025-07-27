@@ -15,10 +15,6 @@ import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
-######## PROBANDING
-import joblib
-
-modelo_posturas = joblib.load("modelo_posturas.pkl")
 
 # ================= CONFIGURACIÓN ===================
 fer = HSEmotionRecognizer(model_name='enet_b2_7')
@@ -93,15 +89,17 @@ def detectar_postura(frame):
     results = pose.process(rgb)
     if results.pose_landmarks:
         mp.solutions.drawing_utils.draw_landmarks(frame, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
-        
-        # Extraer landmarks
-        landmarks = [(lm.x, lm.y, lm.z) for lm in results.pose_landmarks.landmark]
-        flattened_landmarks = [coord for landmark in landmarks for coord in landmark]  # Aplanar a 1D
-        
-        # Predecir postura usando el modelo
-        estado = modelo_posturas.predict([flattened_landmarks])[0]
-        
-        # Mostrar el estado en el frame
+        l_shoulder = results.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_SHOULDER]
+        r_shoulder = results.pose_landmarks.landmark[mp_pose.PoseLandmark.RIGHT_SHOULDER]
+        l_wrist = results.pose_landmarks.landmark[mp_pose.PoseLandmark.LEFT_WRIST]
+        r_wrist = results.pose_landmarks.landmark[mp_pose.PoseLandmark.RIGHT_WRIST]
+        nose = results.pose_landmarks.landmark[mp_pose.PoseLandmark.NOSE]
+        if l_wrist.y < l_shoulder.y and r_wrist.y < r_shoulder.y:
+            estado = "Exaltado"
+        elif nose.y > (l_shoulder.y + r_shoulder.y) / 2:
+            estado = "Decaido"
+        else:
+            estado = "Normal"
         cv2.putText(frame, f"Postura: {estado}", (10, 30),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
     return frame

@@ -5,3 +5,7 @@ numpy
 Pillow
 fer
 mediapipe
+joblib
+hsemotion-onnx
+scikit-learn
+customtkinter

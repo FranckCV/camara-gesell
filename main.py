@@ -100,16 +100,21 @@ def detectar_postura(frame):
         
         # Extraer landmarks
         landmarks = [(lm.x, lm.y, lm.z) for lm in results.pose_landmarks.landmark]
-        flattened_landmarks = [coord for landmark in landmarks for coord in landmark]  # Aplanar a 1D
+        flattened_landmarks = [coord for landmark in landmarks for coord in landmark]
         
-        # Predecir postura usando el modelo
-        estado = modelo_posturas.predict([flattened_landmarks])[0]
+        # Normalizar landmarks
+        modelo = joblib.load("modelo_posturas.pkl")
+        scaler = modelo["scaler"]
+        knn = modelo["model"]
+        labels = modelo["labels"]
+        normalized_landmarks = scaler.transform([flattened_landmarks])
         
-        # Actualizar estadísticas de posturas
-        if estado in posture_counts[CAM02]:
-            posture_counts[CAM02][estado] += 1
+        # Predecir postura
+        distances, indices = knn.kneighbors(normalized_landmarks)
+        if distances[0][0] < 0.5:  # Umbral para considerar una postura válida
+            estado = labels[indices[0][0]]
         else:
-            posture_counts[CAM02][estado] = 1
+            estado = "Desconocido"
         
         # Mostrar el estado en el frame
         cv2.putText(frame, f"Postura: {estado}", (10, 30),

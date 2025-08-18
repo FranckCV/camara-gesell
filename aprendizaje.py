@@ -4,9 +4,9 @@ import joblib
 import mediapipe as mp
 import cv2
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import classification_report, confusion_matrix
 
 # Inicializar MediaPipe Pose
 mp_pose = mp.solutions.pose
@@ -80,19 +80,23 @@ def entrenar_modelo():
     X = np.array(data)
     y = np.array(labels)
     
-    # Dividir datos en entrenamiento y prueba
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    # Normalizar los datos
+    scaler = StandardScaler()
+    X = scaler.fit_transform(X)
     
-    # Entrenar modelo
-    clf = RandomForestClassifier()
-    clf.fit(X_train, y_train)
+    # Entrenar modelo k-NN
+    knn = KNeighborsClassifier(n_neighbors=3, metric="euclidean")
+    knn.fit(X, y)
     
     # Evaluar modelo
-    y_pred = clf.predict(X_test)
-    print("Precisión del modelo:", accuracy_score(y_test, y_pred))
+    y_pred = knn.predict(X)
+    print("\nReporte de clasificación:")
+    print(classification_report(y, y_pred))
+    print("\nMatriz de confusión:")
+    print(confusion_matrix(y, y_pred))
     
-    # Guardar modelo entrenado
-    joblib.dump(clf, "modelo_posturas.pkl")
+    # Guardar modelo entrenado y etiquetas
+    joblib.dump({"model": knn, "scaler": scaler, "labels": np.unique(y)}, "modelo_posturas.pkl")
     print("Modelo entrenado guardado como 'modelo_posturas.pkl'.")
 
 if __name__ == "__main__":
